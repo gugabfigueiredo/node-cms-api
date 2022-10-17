@@ -8,10 +8,11 @@ export class ContentHandler {
     constructor(public db: Database, public logger: Logger) {}
 
 
-    createContentPage(req: Request, res: Response) {
+    createContentPage = (req: Request, res: Response) => {
     }
 
-    readContentPage(req: Request, res: Response) {
+    readContentPage = (req: Request, res: Response) => {
+        this.logger.I("read content page request")
         const { id } = req.params
         const parsedId = parseInt(id)
         if (isNaN(parsedId)) {
@@ -23,22 +24,36 @@ export class ContentHandler {
                 result => {
                     if (result.error) {
                         this.logger.E("could not read content page", result.error, { id: parsedId })
-                        res.status(500)
+                        res.status(500).end()
                     }
 
                     const contentPage = result.rows[0]
-
                     this.logger.I("got content page", { page: contentPage.name })
+                    res.status(200).json({ page: contentPage })
                 }
             )
 
     }
 
-    readContentPages(req: Request, res: Response) {
+    readContentPages = (req: Request, res: Response) => {
+        this.logger.I("read content pages request")
+        this.db.read(new ContentPage({}), req.query)
+            .then(
+                result => {
+                    if (result.error) {
+                        this.logger.E("could not read content pages", result.error)
+                        res.status(500).end()
+                    }
+
+                    const { page, pageSize, pageCount, rowCount, rows } = result
+                    this.logger.I("got content pages", { rowCount, pageCount  })
+                    res.status(200).json({ rows, rowCount, page, pageSize, pageCount })
+                }
+            )
 
     }
 
-    updateContentPage(req: Request, res: Response) {
+    updateContentPage = (req: Request, res: Response) => {
 
     }   
 }
