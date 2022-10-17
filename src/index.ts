@@ -26,12 +26,12 @@ try {
         r.use("/content", Route((r) => {
             r.post("/create", handler.createContentPage)
 
-            r.get("/id/:id(\d+)", handler.readContentPage)
-            r.get(["/", "/page/:page(\d+)"], handler.readContentPages)
+            r.get("/id/:id(\\d+)", handler.readContentPage)
+            r.get(["/", "/page/:page(\\d+)"], handler.readContentPages)
 
             r.put("/update", handler.updateContentPage)
 
-            r.delete("/id/:id(\d+)", handler.deleteContentPage)
+            r.delete("/delete/id/:id(\\d+)", handler.deleteContentPage)
         }))
     }))
 

@@ -1,6 +1,6 @@
-import {Client} from "pg";
-import {Logger} from "mini-ts-logger";
-import {parseQueryParams, QPaginatedResult, QResult} from "./query";
+import { Client } from "pg";
+import { Logger } from "mini-ts-logger";
+import { parseQueryParams, QPaginatedResult, QResult } from "./query";
 import format from "pg-format";
 import { Model } from "./model";
 
@@ -72,12 +72,12 @@ export class Database implements DB {
 
         const db = this.client.database
         const { data, table } = model
-        const { order, page, pageSize, where } = parseQueryParams({...data, ...qParams})
+        const { order, page, pageSize, where } = parseQueryParams({ ...data, ...qParams })
 
         const base = `
             SELECT * from ${format("%I.%I.%I", db, ...table())}
             ${where ? `WHERE ${where}` : ""}
-            ${order ? `ODER BY ${order.join(", ")}` : ""}
+            ${order ? `ODER BY ${order}` : ""}
         `
 
         this.logger.I("running initial query", { db, table: table(), query: base })
@@ -124,7 +124,7 @@ export class Database implements DB {
             UPDATE ${format("%I.%I.%I", db, ...table())}
             SET ${columns.map(([k, v]) => format("%I = %L", k, v)).join(", ")}
             WHERE ${where}
-        `
+        `.replaceAll(/\s+/g, " ").trim()
 
         this.logger.I("running query", { db, table: table(), query: queryString })
         return this.client.query(queryString).then(
@@ -132,6 +132,31 @@ export class Database implements DB {
                 const { rowCount, rows } = result
                 this.logger.I("query executed successfully", { rowCount })
                 return { ...result, rows: rows.map(r => model.new(r)) }
+            },
+            reason => {
+                this.logger.E("failed to execute query", reason, { query: queryString })
+                return { error: reason, rowCount: 0, rows: [], oid: 0, command: "", fields: [] }
+            }
+        )
+    }
+
+    delete = async <T extends Model>(model: T) : Promise<QResult> => {
+
+        const db = this.client.database
+        const { data, table } = model
+        const { where } = parseQueryParams({id: data.id})
+
+        const queryString = `
+            DELETE FROM ${format("%I.%I.%I", db, ...table())}
+            WHERE ${where}
+        `.replaceAll(/\s+/g, " ").trim()
+
+        this.logger.I("running query", { db, table: table(), query: queryString })
+        return this.client.query(queryString).then(
+            result => {
+                const { rowCount } = result
+                this.logger.I("query executed successfully", { rowCount })
+                return { ...result }
             },
             reason => {
                 this.logger.E("failed to execute query", reason, { query: queryString })
