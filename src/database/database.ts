@@ -52,7 +52,7 @@ export class Database implements DB {
                 (${format("%I", entries.map(([k,]) => k))})
                 VALUES (${format("%L", entries.map(([,v]) => v))})
                 RETURNING id, "name", "created_at"
-        `
+        `.replaceAll(/\s+/g, " ").trim()
 
         this.logger.I("running query", { db, table: table(), query: queryString })
         return this.client.query(queryString).then(
@@ -78,7 +78,7 @@ export class Database implements DB {
             SELECT * from ${format("%I.%I.%I", db, ...table())}
             ${where ? `WHERE ${where}` : ""}
             ${order ? `ODER BY ${order}` : ""}
-        `
+        `.replaceAll(/\s+/g, " ").trim()
 
         this.logger.I("running initial query", { db, table: table(), query: base })
         return this.client.query(base).then(
@@ -90,7 +90,8 @@ export class Database implements DB {
                         ${base}
                         LIMIT ${pageSize}
                         ${page ? `OFFSET ${(page - 1) * pageSize}` : ""}
-                    `
+                    `.replaceAll(/\s+/g, " ").trim()
+
                     return this.client.query(paginated).then(
                         result => {
                             const { rowCount, rows } = result
