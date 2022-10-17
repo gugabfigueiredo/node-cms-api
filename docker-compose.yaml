@@ -1,0 +1,13 @@
+version: "3"
+services:
+  database:
+    image: postgres:9.6
+    container_name: "postgres"
+    environment:
+      - POSTGRES_DB=cms
+      - POSTGRES_USER=cms-user
+      - POSTGRES_PASSWORD=123qwe
+    volumes:
+      - "./init.sql:/docker-entrypoint-initdb.d/init.sql"
+    ports:
+      - 5432:5432
