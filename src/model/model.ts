@@ -1,7 +1,7 @@
-import {Model} from "../database/database";
+import { Model } from "../database/";
 
 export class ContentPage extends Model{
-    tableName = "content_page.pages"
+    tableName = "content_pages.pages"
     constructor(public data: {
         id?: number,
         name?: string,
@@ -17,7 +17,7 @@ export class ContentPage extends Model{
 
 
 export class Template extends Model{
-    tableName = "content_page.templates"
+    tableName = "content_pages.templates"
     constructor(public data: {
         id?: number;
         name?: string;
