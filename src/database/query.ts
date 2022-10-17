@@ -12,10 +12,10 @@ export interface QResult extends QueryResult {
     error?: any
 }
 
-export interface QPaginatedResult extends QResult {
-    page: number;
-    pageSize: number;
-    pageCount: number;
+export interface QPaginatedResult extends QueryResult, QResult {
+    page?: number;
+    pageSize?: number;
+    pageCount?: number;
 }
 
 export const parseQueryParams = (params: { [key: string]: any } = {}) : Query => {
