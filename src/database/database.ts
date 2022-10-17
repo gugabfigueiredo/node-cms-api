@@ -2,24 +2,7 @@ import {Client} from "pg";
 import {Logger} from "mini-ts-logger";
 import {parseQueryParams, QPaginatedResult, QResult} from "./query";
 import format from "pg-format";
-
-export type ModelConstructor<T extends Model> = {
-    new (args: {[k: string]: any}): T;
-}
-
-export class Model {
-    tableName: string = ""
-
-    constructor(public data: {[k: string]: any}) {}
-
-    table(): string {
-        return this.tableName;
-    }
-
-    new(args: {[k: string]: any}): this {
-        return new(this.constructor as ModelConstructor<this>)(args)
-    }
-}
+import { Model } from "./model";
 
 export type Credentials = {
     connectionString?: string;
@@ -32,22 +15,21 @@ export type Credentials = {
 
 export interface DB {
     create: <T extends Model>(m: T) => Promise<QResult>
-    read: <T extends Model>(m: T, q: T) => Promise<QResult | QPaginatedResult>
+    read: <T extends Model>(m: T, q: {[k: string]: any}) => Promise<QPaginatedResult>
     update: <T extends Model>(m: T) => Promise<QResult>
 }
 
 export class Database implements DB {
 
     client: Client
-    logger: Logger
 
-    constructor({ url, ...credentials }: Credentials, logger: Logger) {
-        this.client = new Client({...credentials, connectionString: url})
-        this.logger = logger
+    constructor({ ...credentials }: Credentials, public logger: Logger) {
+        this.client = new Client({...credentials })
+        this.logger.I("trying to connect to database", { ...credentials })
         this.connect()
             .then(
-                () => { logger.I("connection open with database") },
-                reason => { logger.F("failed to connect to database", reason) }
+                () => { this.logger.I("connection open with database") },
+                reason => { this.logger.F("failed to connect to database", reason) }
             )
     }
 
@@ -55,18 +37,18 @@ export class Database implements DB {
         await this.client.connect();
     }
 
-    async close() {
+    close = async () => {
         await this.client.end();
     }
 
-    async create<T extends Model>(model: T) : Promise<QResult> {
+    create = async <T extends Model>(model: T) : Promise<QResult> => {
 
         const db = this.client.database
         const { data, table } = model
         const keys = Object.keys(data).filter(k => k !== "id")
 
         const queryString = `
-            INSERT INTO ${format("%I.%I", db, table())}
+            INSERT INTO ${format("%I.%I.%I", db, ...table())}
                 (${keys.join(", ")})
                 VALUES (${keys.map((k, i) => `$${i+1}`).join(", ")})
                 RETURNING id, "name", "created_at"
@@ -81,7 +63,7 @@ export class Database implements DB {
                     return { ...result, row: rows.map(r => model.new(r)) }
                 },
                 reason => {
-                    this.logger.F("failed to execute query", reason, { query: queryString })
+                    this.logger.E("failed to execute query", reason, { query: queryString })
                     return { error: reason, rowCount: 0, rows: [], oid: 0, command: "", fields: [] }
                 }
             )
