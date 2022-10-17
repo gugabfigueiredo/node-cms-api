@@ -45,28 +45,27 @@ export class Database implements DB {
 
         const db = this.client.database
         const { data, table } = model
-        const keys = Object.keys(data).filter(k => k !== "id")
+        const entries = Object.entries(data).filter(([k,]) => k !== "id")
 
         const queryString = `
             INSERT INTO ${format("%I.%I.%I", db, ...table())}
-                (${keys.join(", ")})
-                VALUES (${keys.map((k, i) => `$${i+1}`).join(", ")})
+                (${format("%I", entries.map(([k,]) => k))})
+                VALUES (${format("%L", entries.map(([,v]) => v))})
                 RETURNING id, "name", "created_at"
         `
 
         this.logger.I("running query", { db, table: table(), query: queryString })
-        return this.client.query(queryString, Object.values(data))
-            .then(
-                result => {
-                    const { oid, rowCount, rows } = result
-                    this.logger.I(`inserted in database`, { oid, rowCount })
-                    return { ...result, row: rows.map(r => model.new(r)) }
-                },
-                reason => {
-                    this.logger.E("failed to execute query", reason, { query: queryString })
-                    return { error: reason, rowCount: 0, rows: [], oid: 0, command: "", fields: [] }
-                }
-            )
+        return this.client.query(queryString).then(
+            result => {
+                const { oid, rowCount, rows } = result
+                this.logger.I(`inserted in database`, { oid, rowCount })
+                return { ...result, row: rows.map(r => model.new(r)) }
+            },
+            reason => {
+                this.logger.E("failed to execute query", reason, { query: queryString })
+                return { error: reason, rowCount: 0, rows: [], oid: 0, command: "", fields: [] }
+            }
+        )
     }
 
     read = async <T extends Model>(model: T, qParams: {[k: string]: any} = {}) : Promise<QPaginatedResult> => {
@@ -128,17 +127,16 @@ export class Database implements DB {
         `
 
         this.logger.I("running query", { db, table: table(), query: queryString })
-        return this.client.query(queryString)
-            .then(
-                result => {
-                    const { rowCount, rows } = result
-                    this.logger.I("query executed successfully", { rowCount })
-                    return { ...result, rows: rows.map(r => model.new(r)) }
-                },
-                reason => {
-                    this.logger.E("failed to execute query", reason, { query: queryString })
-                    return { error: reason, rowCount: 0, rows: [], oid: 0, command: "", fields: [] }
-                }
-            )
+        return this.client.query(queryString).then(
+            result => {
+                const { rowCount, rows } = result
+                this.logger.I("query executed successfully", { rowCount })
+                return { ...result, rows: rows.map(r => model.new(r)) }
+            },
+            reason => {
+                this.logger.E("failed to execute query", reason, { query: queryString })
+                return { error: reason, rowCount: 0, rows: [], oid: 0, command: "", fields: [] }
+            }
+        )
     }
 }
