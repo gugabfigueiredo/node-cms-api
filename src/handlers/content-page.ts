@@ -65,7 +65,19 @@ export class ContentHandler {
     }
 
     updateContentPage = (req: Request, res: Response) => {
-
+        const updatePage = new ContentPage(req.body)
+        const logger = this.logger.C({ updatePage })
+        logger.I("update content page request")
+        this.db.update(updatePage).then(
+            result => {
+                if (result.error) {
+                    logger.E("failed to update content page", result.error)
+                    res.status(500).end()
+                }
+                logger.I("content page updated successfully")
+                res.status(200).end()
+            }
+        )
     }
 
     deleteContentPage = (req: Request, res: Response) => {

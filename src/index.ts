@@ -24,17 +24,20 @@ try {
 
     const server = Server(`/${CONTEXT}`, Route((r) => {
         r.use("/content", Route((r) => {
+            r.post("/create", handler.createContentPage)
+
+            r.get("/id/:id(\d+)", handler.readContentPage)
             r.get(["/", "/page/:page(\d+)"], handler.readContentPages)
 
-            r.post("/id/:id(\d+)", handler.createContentPage)
-            r.get("/id/:id(\d+)", handler.readContentPage)
-            r.put("/id/:id(\d+)", handler.updateContentPage)
+            r.put("/update", handler.updateContentPage)
+
+            r.delete("/id/:id(\d+)", handler.deleteContentPage)
         }))
     }))
 
-    const PORT: any = process.env.CMS_PORT ?? 8080;
+    const PORT: any = process.env.CMS_PORT ?? 8080
     server.listen(`${PORT}`, () => {
-        logger.I(`Server started at port ${PORT}`);
+        logger.I(`Server started at port ${PORT}`)
     })
 } catch (e) {
     logger.E("failed to start server", e)
