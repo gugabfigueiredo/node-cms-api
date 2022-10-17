@@ -1,0 +1,1 @@
+export {ContentHandler} from "./content-page"
