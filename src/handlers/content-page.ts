@@ -1,11 +1,11 @@
-import {Request, Response} from "express";
-import {Database} from "../database";
-import {ContentPage} from "../model/model";
-import {Logger} from "mini-ts-logger";
+import { Request, Response } from "express";
+import { IDatabase } from "../database";
+import { ContentPage } from "../model";
+import { Logger } from "mini-ts-logger";
 
 export class ContentHandler {
 
-    constructor(public db: Database, public logger: Logger) {}
+    constructor(public db: IDatabase, public logger: Logger) {}
 
 
     createContentPage = (req: Request, res: Response) => {
@@ -113,4 +113,3 @@ export class ContentHandler {
         )
     }
 }
-
