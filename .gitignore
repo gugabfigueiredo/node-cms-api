@@ -9,3 +9,5 @@ gen
 
 /build
 /node_modules
+
+local.sh
