@@ -13,13 +13,14 @@ export type Credentials = {
     password?: string;
 }
 
-export interface DB {
+export interface IDatabase {
     create: <T extends Model>(m: T) => Promise<QResult>
-    read: <T extends Model>(m: T, q: {[k: string]: any}) => Promise<QPaginatedResult>
+    read: <T extends Model>(m: T, q?: {[k: string]: any}) => Promise<QPaginatedResult>
     update: <T extends Model>(m: T) => Promise<QResult>
+    delete: <T extends Model>(m: T) => Promise<QResult>
 }
 
-export class Database implements DB {
+export class Database implements IDatabase {
 
     client: Client
 
@@ -68,7 +69,7 @@ export class Database implements DB {
         )
     }
 
-    read = async <T extends Model>(model: T, qParams: {[k: string]: any} = {}) : Promise<QPaginatedResult> => {
+    read = async <T extends Model>(model: T, qParams: {[k: string]: any} | undefined = {}) : Promise<QPaginatedResult> => {
 
         const db = this.client.database
         const { data, table } = model
