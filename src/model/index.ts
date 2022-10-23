@@ -1,0 +1,1 @@
+export { ContentPage, Template } from "./model"
