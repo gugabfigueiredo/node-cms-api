@@ -1,5 +1,5 @@
 /** source/index.ts */
-import express, {Express, Router} from 'express';
+import express, { Express, Router } from 'express';
 import morgan from 'morgan';
 
 export const Route = (route: (r: Router) => void) : Router => {
