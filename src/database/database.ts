@@ -53,7 +53,7 @@ export class Database implements IDatabase {
                 (${format("%I", entries.map(([k,]) => k))})
                 VALUES (${format("%L", entries.map(([,v]) => v))})
                 RETURNING id, "name", "created_at"
-        `.replaceAll(/\s+/g, " ").trim()
+        `
 
         this.logger.I("running query", { db, table: table(), query: queryString })
         return this.client.query(queryString).then(
@@ -79,7 +79,7 @@ export class Database implements IDatabase {
             SELECT * from ${format("%I.%I.%I", db, ...table())}
             ${where ? `WHERE ${where}` : ""}
             ${order ? `ODER BY ${order}` : ""}
-        `.replaceAll(/\s+/g, " ").trim()
+        `
 
         this.logger.I("running initial query", { db, table: table(), query: base })
         return this.client.query(base).then(
@@ -91,7 +91,7 @@ export class Database implements IDatabase {
                         ${base}
                         LIMIT ${pageSize}
                         ${page ? `OFFSET ${(page - 1) * pageSize}` : ""}
-                    `.replaceAll(/\s+/g, " ").trim()
+                    `
 
                     return this.client.query(paginated).then(
                         result => {
@@ -126,7 +126,7 @@ export class Database implements IDatabase {
             UPDATE ${format("%I.%I.%I", db, ...table())}
             SET ${columns.map(([k, v]) => format("%I = %L", k, v)).join(", ")}
             WHERE ${where}
-        `.replaceAll(/\s+/g, " ").trim()
+        `
 
         this.logger.I("running query", { db, table: table(), query: queryString })
         return this.client.query(queryString).then(
@@ -151,7 +151,7 @@ export class Database implements IDatabase {
         const queryString = `
             DELETE FROM ${format("%I.%I.%I", db, ...table())}
             WHERE ${where}
-        `.replaceAll(/\s+/g, " ").trim()
+        `
 
         this.logger.I("running query", { db, table: table(), query: queryString })
         return this.client.query(queryString).then(

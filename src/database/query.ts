@@ -1,4 +1,4 @@
-import {QueryResult} from "pg";
+import { QueryResult } from "pg";
 import format from "pg-format";
 
 export interface Query {
@@ -19,12 +19,15 @@ export interface QPaginatedResult extends QueryResult, QResult {
 }
 
 export const parseQueryParams = (params: { [key: string]: any } = {}) : Query => {
-    const { order, page, pageSize, ...raw } = params
+    const { order, page, pageSize, limit, ...raw } = params
 
     const ordered: string[] | undefined = order && (Array.isArray(order) ? order : [order])
         .map((p: string) => p.replaceAll("__", " "))
 
-    return {page: parseInt(page), pageSize: parseInt(pageSize), where: Object.entries(raw).map(build).join(" and "),
+    return {
+        page: parseInt(page),
+        pageSize: parseInt(pageSize || limit),
+        where: Object.entries(raw).map(build).join(" and "),
         order: ordered ? format("%L", ordered) : undefined}
 }
 
