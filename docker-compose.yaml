@@ -2,7 +2,7 @@ version: "3"
 services:
   database:
     image: postgres:9.6
-    container_name: "postgres"
+    container_name: "postgres-cms-api"
     environment:
       - POSTGRES_DB=cms
       - POSTGRES_USER=cms-user
